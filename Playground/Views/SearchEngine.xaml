@@ -1,0 +1,88 @@
+﻿<Window x:Class="Playground.Views.SearchEngine"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Playground.Views"
+        xmlns:models="clr-namespace:Playground.Models"
+        mc:Ignorable="d"
+        Title="SearchEngine" Height="450" Width="800">
+    <Window.Resources>
+        <!-- Describes how to display Search Result objects-->
+        <DataTemplate DataType="{x:Type models:SearchResult}">
+            <!--Only allowed one control in a data template, solved by useing a pannel which allows multiple-->
+            <StackPanel Margin="0,3">
+                <TextBlock Text="{Binding Text}" FontWeight="Bold"/>
+                <TextBlock TextWrapping="Wrap">
+                    <TextBlock Text="From : " FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Source}" FontWeight="Bold"/>
+                </TextBlock>
+                <TextBlock>
+                    <Hyperlink NavigateUri="{Binding Url}" RequestNavigate="LinkNavigate">
+                        <TextBlock Text="{Binding DisplayUrl}"/>
+                    </Hyperlink>
+                </TextBlock>
+                <TextBlock Text="{Binding Description}" TextWrapping="Wrap"/>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="345*"/>
+            <RowDefinition Height="34*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation ="Horizontal" 
+                Margin="5" VerticalAlignment="Center">
+            <TextBlock Text="Search" VerticalAlignment="Center"/>
+            <TextBox x:Name="TxtSearch" 
+                     Width="300" 
+                     Height="30" 
+                     Margin="5,0" 
+                     VerticalContentAlignment="Center"/>
+            <!--<Label x:Name="label" Content="{Binding SearchResultCount, StringFormat='Reduced by {0:0.0}%'}"/>-->
+        </StackPanel>
+        <Button Grid.Row="0" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Center"
+                Content="Search" 
+                Margin="0,5,5,5" 
+                Width="65" 
+                Height="30" 
+                Command="{Binding Path=DoSearchCommand}"
+                CommandParameter="{Binding ElementName=TxtSearch, Path=Text}"/>
+        <ListBox x:Name="ResultsList" Grid.Row="1" ItemsSource="{Binding Path=Results}" Margin="5,0,5,6" />
+        <!--"Nothing to display, do a search"-->
+        <TextBlock Grid.Row="1" FontStyle="Italic" FontSize="32" Text="{Binding Path=DisplayMessage}" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=ResultsList, Path=Items.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        <TextBlock Grid.Row="2" Text="{Binding SearchResultCount, StringFormat='Search Count {0}'}"
+                   Margin="5,0"/>
+
+        <Button Grid.Row="2" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Center"
+                Content="Next" 
+                Margin="0,5,5,5" 
+                Width="65" 
+                Height="30" 
+                Command="{Binding Path=NextPageCommand}"/>
+        <Button Grid.Row="2" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Center"
+                Content="Previous" 
+                Margin="0,5,100,5" 
+                Width="65" 
+                Height="30" 
+                Command="{Binding Path=PreviousPageCommand}"/>
+    </Grid>
+</Window>
