@@ -2,10 +2,12 @@
 using Playground.Models;
 using Playground.Views;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace Playground.ViewModels
@@ -151,7 +153,7 @@ namespace Playground.ViewModels
             var pageType = obj as string;
             // Build a background worker 
             BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += GetPageWorkerAsync; // Main task is the search   
+            worker.DoWork += Worker_GetPage; // Main task is the search   
             worker.RunWorkerCompleted += worker_RunInterleave; // Once main task, this function is called 
             worker.RunWorkerAsync(argument: pageType); // Start the worker with our search term passed in as an argument.
         }
@@ -193,7 +195,7 @@ namespace Playground.ViewModels
 
             // Build a background worker 
             BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += worker_DoSearchAsync; // Adds a handler for our main task the search   
+            worker.DoWork += Worker_DoSearch; // Adds a handler for our main task the search   
             worker.RunWorkerCompleted += worker_RunInterleave; // Once main task is completed this function will be called 
             worker.RunWorkerAsync(argument: searchTerm); // Start the worker with our search term passed in as an argument.
         }
@@ -206,24 +208,31 @@ namespace Playground.ViewModels
         /// </summary>
         /// <param name="sender">The object that raised the event</param>
         /// <param name="e">Event arguement data</param>
-        private async void GetPageWorkerAsync(object sender, DoWorkEventArgs e)
-        {           
+        private void Worker_GetPage(object sender, DoWorkEventArgs e)
+        {
             var type = e.Argument as string;
+            var taskList = new List<Task>();
             // Foreach search engine get a page
             foreach (var engine in this.SearchEngines)
             {
-                // Check the arg type to know which direction we are going
-                if (type == "Next")
+                var task = new Task(() =>
                 {
-                    await engine.GetNextPageAsync();
-                }
-                else
-                {
-                    await engine.GetPreviousPageAsync();
-                }
+                    // Check the arg type to know which direction we are going
+                    if (type == "Next")
+                    {
+                        engine.GetNextPageAsync();
+                    }
+                    else
+                    {
+                        engine.GetPreviousPageAsync();
+                    }
+                });
+                taskList.Add(task);
+                task.Start();
             }
+            Task.WaitAll(taskList.ToArray());
         }
-        
+
         /// <summary>
         /// The search worker done event handler
         /// </summary>
@@ -241,14 +250,21 @@ namespace Playground.ViewModels
         /// </summary>
         /// <param name="sender">The object that called the event</param>
         /// <param name="e">Event arguement data</param>
-        private async void worker_DoSearchAsync(object sender, DoWorkEventArgs e)
+        private void Worker_DoSearch(object sender, DoWorkEventArgs e)
         {
             var searchTerm = e.Argument as string;
-
+            var taskList = new List<Task>();
             foreach (var engine in this.SearchEngines)
             {
-                await engine.DoSearchAsync(searchTerm);
+                var task = new Task(() =>
+                {
+                    engine.DoSearchAsync(searchTerm);
+                });
+                taskList.Add(task);
+                task.Start();
+                //await engine.DoSearchAsync(searchTerm);
             }
+            Task.WaitAll(taskList.ToArray());
         }
         #endregion
 
