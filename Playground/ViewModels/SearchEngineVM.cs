@@ -116,7 +116,7 @@ namespace Playground.ViewModels
             // Populate our search engine list
             SearchEngines = new ObservableCollection<ISearchEngine>();
             SearchEngines.Add(new BingEngine());
-            //SearchEngines.Add(new YahooEngine());
+            SearchEngines.Add(new YahooEngine());
         }
         #endregion
 
