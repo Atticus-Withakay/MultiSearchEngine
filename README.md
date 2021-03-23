@@ -23,12 +23,12 @@ A display message is rendered in the middle of the window and only displays when
 - While a search is in progress shows "Searching...."
 - When complete it will be set to "Search complete at: {current time}" but will only display if there are no results! So ui gives feedback in the event of no results and you arent sitting there going "Has it broken?"
 
-When the search button is clicked the term is passed to a background worker that kicks off each search engine search sequentially. Once the worker is complete the display list is updated and rendered.
+When the search button is clicked the term is passed to a background worker that kicks off each search engine search sequentially. Once the worker is complete the display list is updated and rendered. Each result has a title, url, description and source telling you which engine it came from. Clicking on the url will open the url in your default browser.
 
 When a search is done if a Next page link is discoverd then the next button will be enabled and the user can cycle though pages. The same applies to the Previous page button.
 
 ## Assumptions
-1. Each Search engine displays results slightly differently and may include ads or other suggested results. Therefor I have made a choice to only allow results that have a particular form:
+1. Each Search engine displays results slightly differently and may include ads or other suggested results. Therefore I have made a choice to only allow results that have a particular form:
 - List elements with the class b_algo for Bing
 - Div elements with the class algo for Yahoo
 
@@ -54,3 +54,4 @@ Taking the above into account and with the time allowed I was only able to obtai
 - The Description parser could be improved, currently gets the inner text from a search result but the formating 
 - Add a current page = x to the ui
 - The background worker helps a lot with not blocking the UI but there is a bug where the previous button wouldnt enable until the window loses focus then gets refocused. My fix is just to reset the bindings but this is not a proper fix as it does that for all commmands not just the one that isnt updating. 
+- Add a selection feature that would allow the user to make a "cart" of results and once review has been done display only the interesting results.
