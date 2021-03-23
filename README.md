@@ -23,7 +23,7 @@ A display message is rendered in the middle of the window and only displays when
 - While a search is in progress shows "Searching...."
 - When complete it will be set to "Search complete at: {current time}" but will only display if there are no results! So UI gives feedback in the event of no results and you aren't sitting there going "Has it broken?"
 
-When the search button is clicked the term is passed to a background worker that kicks off each search engine search sequentially. Once the worker is complete the display list is updated and rendered. Each result has a title, url, description and source telling you which engine it came from. Clicking on the url will open it in your default browser.
+When the search button is clicked the term is passed to a background worker that kicks off each search engine search in parallel. Once the worker is complete the display list is updated and rendered. Each result has a title, url, description and source telling you which engine it came from. Clicking on the url will open it in your default browser.
 
 When a search is done if a Next page link is discovered then the next button will be enabled and the user can cycle though pages. The same applies to the Previous page button.
 
