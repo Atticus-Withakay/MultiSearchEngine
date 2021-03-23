@@ -6,65 +6,89 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace Playground.ViewModels
 {
-    public class SearchEngineVM : ISearchEngineVM, INotifyPropertyChanged
+    public class SearchEngineVM : Notifier, ISearchEngineVM
     {
+        #region Member variables
         // An observeable collection to store the results for displaying. When this list change it will be reflected in the view
         ObservableCollection<SearchResult> _results = new ObservableCollection<SearchResult>();
         ICommand _doSearchCommand;
         ICommand _nextPageCommand;
         ICommand _previousPageCommand;
+        ObservableCollection<ISearchEngine> _searchEngines;
 
-        string _statusMessage;
-
-        // List to contain search engines, allows for future expansion
-        List<ISearchEngine> searchEngines;
+        string _DisplayMessage;
 
         // The search count total
         int _searchResultCount;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        #endregion
 
         #region Properties
+        // List to contain search engines, allows for future expansion
+        public ObservableCollection<ISearchEngine> SearchEngines
+        {
+            get { return _searchEngines; }
+            set
+            {
+                this._searchEngines = value;
+            }
+        }
 
+        /// <summary>
+        /// Gets or sets the DoSearch command
+        /// </summary>
         public ICommand DoSearchCommand
         {
             get => _doSearchCommand;
             set => _doSearchCommand = value;
         }
 
+        /// <summary>
+        /// Gets or sets the next page command
+        /// </summary>
         public ICommand NextPageCommand
         {
             get => _nextPageCommand;
             set => _nextPageCommand = value;
         }
 
+        /// <summary>
+        /// Gets or sets the previous page command
+        /// </summary>
         public ICommand PreviousPageCommand
         {
             get => _previousPageCommand;
             set => _previousPageCommand = value;
         }
 
+        /// <summary>
+        /// Gets the search results list
+        /// </summary>
         public ObservableCollection<SearchResult> Results {
             get => _results;
         }
 
+        /// <summary>
+        /// Gets or sets the status message and updates the ui
+        /// </summary>
         public string DisplayMessage
         {
-            get { return _statusMessage; }
+            get { return _DisplayMessage; }
             set
             {
-                this._statusMessage = value;
+                this._DisplayMessage = value;
                 OnNotifyPropertyChanged();
             }
         }
 
+        /// <summary>
+        /// Gets or sets the search result count of the currently displayed results
+        /// </summary>
         public int SearchResultCount
         {
             get { return _searchResultCount; }
@@ -77,68 +101,75 @@ namespace Playground.ViewModels
 
         #endregion
 
+        #region Constructor
+        /// <summary>
+        /// The SearchEngineVM Constructor
+        /// </summary>
         public SearchEngineVM() 
         {
-            _doSearchCommand = new DelegateCommand(DoSearchAsync,
-                                                   CanDoSearch);
+            // Initalise the commmands
+            _doSearchCommand = new DelegateCommand(DoSearch, CanDoSearch);
+            _nextPageCommand = new DelegateCommand(GetPage, CanGetNextPage);
+            _previousPageCommand = new DelegateCommand(GetPage, CanGetPreviousPage);
+            // Set the starting display image
+            _DisplayMessage = "Nothing to display, do a search";
 
-            _nextPageCommand = new DelegateCommand(NextPageAsync, CanGetNextPage);
-            _previousPageCommand = new DelegateCommand(PreviousPage, CanGetPreviousPage);
-
-            _statusMessage = "Nothing to display, do a search";
-
-            searchEngines = new List<ISearchEngine>();
-            searchEngines.Add(new BingEngine());
-            searchEngines.Add(new YahooEngine());
+            // Populate our search engine list
+            SearchEngines = new ObservableCollection<ISearchEngine>();
+            SearchEngines.Add(new BingEngine());
+            //SearchEngines.Add(new YahooEngine());
         }
+        #endregion
 
+        #region Action & Predicates
         /// <summary>
         /// Checks if any of the search engines have a previous page link
         /// </summary>
         /// <param name="obj"></param>
-        /// <returns>True if there is a previous page url</returns>
+        /// <returns>True if there is a previous page url, otherwise disables the previous button</returns>
         private bool CanGetPreviousPage(object obj)
         {
-            return this.searchEngines.Any(engine => !string.IsNullOrEmpty(engine.PreviousPageUrl));
-            //return string.IsNullOrEmpty(_bingEngine.PreviousPageUrl) || string.IsNullOrEmpty(_yahooEngine.PreviousPageUrl);
+            return this.SearchEngines.Any(engine => !string.IsNullOrEmpty(engine.PreviousPageUrl));
         }
 
         /// <summary>
         /// Checks if any of the search engines have a next page link
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns>True if there is a next page url</returns>
+        /// <param name="obj">Required by pedicate but serves no use for this particular implementation</param>
+        /// <returns>True if there is a next page url, otherwise disables the next button</returns>
         private bool CanGetNextPage(object obj)
         {
-            return this.searchEngines.Any(engine => !string.IsNullOrEmpty(engine.NextPageUrl));
-
-            //return string.IsNullOrEmpty(_bingEngine.NextPageUrl) || string.IsNullOrEmpty(_yahooEngine.NextPageUrl);
+            return this.SearchEngines.Any(engine => !string.IsNullOrEmpty(engine.NextPageUrl));
         }
 
-        private async void PreviousPage(object obj)
+
+        /// <summary>
+        /// Function that will build a background worker to fetch a page of results based on the page type e.g. Next or previous
+        /// </summary>
+        /// <param name="obj">The param encapsulated by the action, should store a string</param>
+        public void GetPage(object obj)
         {
-
-            foreach (var engine in this.searchEngines)
-            {
-                await engine.GetPreviousPageAsync();
-            }
-            InterleaveResults();
+            var pageType = obj as string;
+            // Build a background worker 
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += GetPageWorkerAsync; // Main task is the search   
+            worker.RunWorkerCompleted += worker_RunInterleave; // Once main task, this function is called 
+            worker.RunWorkerAsync(argument: pageType); // Start the worker with our search term passed in as an argument.
         }
 
-        private async void NextPageAsync(object obj)
-        {
-            foreach (var engine in this.searchEngines)
-            {
-                await engine.GetNextPageAsync();
-            }
-            InterleaveResults();
-        }
-
+        /// <summary>
+        /// Predicate that checks that its possible to do a search
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         private bool CanDoSearch(object obj)
         {
             //TODO: implement some form of validation to check search is okay to do.
             var valid = false;
-            if (!string.IsNullOrEmpty(obj as string))
+            var searchTerm = obj as string;
+
+            //checked if text and not just white space
+            if (!string.IsNullOrEmpty(searchTerm) && !string.IsNullOrWhiteSpace(searchTerm))
             {
                 valid = true;
             }
@@ -146,28 +177,81 @@ namespace Playground.ViewModels
             return valid;
         }
 
-        private async void DoSearchAsync(object param)
+        /// <summary>
+        /// Action that will build a background worker to do the search
+        /// </summary>
+        /// <param name="param">The action data, should contain the search term</param>
+        public void DoSearch(object param)
         {
             // Update search message to show something is happening
             DisplayMessage = "Searching....";
-            
+
+            // As we are starting a search make sure our results are empty ready for our next batch
+            this.Results.Clear();
 
             // Remove any white space from start/end
             var searchTerm = (param as string).Trim();
 
-            var tasks = new List<Task>();
-            // For each of our search engines do a search with our search term
-            foreach (var engine in this.searchEngines)
-            {
-                tasks.Append(engine.DoSearchAsync(searchTerm));
-            }
-
-            await Task.WhenAll(tasks);
-            InterleaveResults();
-            // Builds our list of results but maintains search engine ranking
-
-            
+            // Build a background worker 
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += worker_DoSearchAsync; // Adds a handler for our main task the search   
+            worker.RunWorkerCompleted += worker_RunInterleave; // Once main task is completed this function will be called 
+            worker.RunWorkerAsync(argument: searchTerm); // Start the worker with our search term passed in as an argument.
         }
+
+        #endregion
+
+        #region Background workers
+        /// <summary>
+        /// Asyc function that will fetch either the next or previous page of results
+        /// </summary>
+        /// <param name="sender">The object that raised the event</param>
+        /// <param name="e">Event arguement data</param>
+        private async void GetPageWorkerAsync(object sender, DoWorkEventArgs e)
+        {           
+            var type = e.Argument as string;
+            // Foreach search engine get a page
+            foreach (var engine in this.SearchEngines)
+            {
+                // Check the arg type to know which direction we are going
+                if (type == "Next")
+                {
+                    await engine.GetNextPageAsync();
+                }
+                else
+                {
+                    await engine.GetPreviousPageAsync();
+                }
+            }
+        }
+        
+        /// <summary>
+        /// The search worker done event handler
+        /// </summary>
+        /// <param name="sender">The object that raised the event</param>
+        /// <param name="e">Event arguement data</param>
+        private void worker_RunInterleave(object sender, RunWorkerCompletedEventArgs e)
+        {
+            InterleaveResults();
+            // There is a bug where my previous button can execute function is running before the previous url is set. Probably due to work thread ui thread issues. This is a quick fix to demo the app, with more time would be fixed.
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        /// <summary>
+        /// The search worker event handler
+        /// </summary>
+        /// <param name="sender">The object that called the event</param>
+        /// <param name="e">Event arguement data</param>
+        private async void worker_DoSearchAsync(object sender, DoWorkEventArgs e)
+        {
+            var searchTerm = e.Argument as string;
+
+            foreach (var engine in this.SearchEngines)
+            {
+                await engine.DoSearchAsync(searchTerm);
+            }
+        }
+        #endregion
 
         /// <summary>
         /// Function that takes each list of results from each search engine and merges them while maintaining search engine ranking.
@@ -178,17 +262,19 @@ namespace Playground.ViewModels
         private void InterleaveResults()
         {
             // Make sure our results list is clear ready for new results
-            this._results.Clear();
+            this.Results.Clear();
+
+            //List<SearchResult> res = new List<SearchResult>();
 
             // Set our result counter
-            this.SearchResultCount = this.searchEngines.Sum(engine => engine.Results.Count);
+            this.SearchResultCount = this.SearchEngines.Sum(engine => engine.Results.Count);
 
             // Find the maximum number of results from out list so we know how far to iterate
-            var searchCount = this.searchEngines.Max(engine => engine.Results.Count);
+            var searchCount = this.SearchEngines.Max(engine => engine.Results.Count);
 
             for (int i = 0; i < searchCount; i++)
             {
-                foreach (var engine in this.searchEngines)
+                foreach (var engine in this.SearchEngines)
                 {
                     var result = engine.Results.ElementAtOrDefault(i);
                     // Only add a result if it exists, different engines may return different number of results
@@ -201,17 +287,15 @@ namespace Playground.ViewModels
 
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine($"Finished search at: {DateTime.Now}");
-            if (this._results.Count == 0)
+            if (this.Results.Count == 0)
             {
-                stringBuilder.AppendLine("No search results");
+                    stringBuilder.AppendLine("No search results");
             }
+
+            // The display message is only visible when Results.Count is 0 but good to have some details saved each time
             DisplayMessage = stringBuilder.ToString();
         }     
 
-        public void OnNotifyPropertyChanged([CallerMemberName] string name = "")//By using CallerMemberName no need to hard code property names, reduces errors! Obtains method/property name of caller to the method
-        {
-            // the ? means if PropertyChanged is null it wont invoke.
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
+        
     }
 }

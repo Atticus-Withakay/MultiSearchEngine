@@ -91,13 +91,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Interfaces\ISearchEngine.cs" />
-    <Compile Include="Models\BadHttpCode.cs" />
     <Compile Include="Models\DelegateCommand.cs" />
     <Compile Include="Models\Notifier.cs" />
     <Compile Include="Models\WebScraper.cs" />
-    <Compile Include="ViewModels\BingEngine.cs" />
-    <Compile Include="ViewModels\YahooEngine.cs" />
-    <Compile Include="ViewModels\ISearchEngineVM.cs" />
+    <Compile Include="Models\BingEngine.cs" />
+    <Compile Include="Models\YahooEngine.cs" />
+    <Compile Include="Interfaces\ISearchEngineVM.cs" />
     <Compile Include="ViewModels\SearchEngineVM.cs" />
     <Compile Include="Views\SearchEngine.xaml.cs">
       <DependentUpon>SearchEngine.xaml</DependentUpon>

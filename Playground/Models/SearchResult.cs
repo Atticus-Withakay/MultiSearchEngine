@@ -8,22 +8,13 @@ using System.Threading.Tasks;
 
 namespace Playground.Models
 {
-    public class SearchResult : INotifyPropertyChanged
+    public class SearchResult : Notifier, INotifyPropertyChanged
     {
         private string _Text;
         private string _DisplayUrl; // I have found that some websites have a friendly display link.
         private string _Url;
         private string _Description;
         private string _Source;
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnNotifyPropertyChanged([CallerMemberName] string name = "")//By using CallerMemberName no need to hard code property names, reduces errors! Obtains method/property name of caller to the method
-        {
-            // the ? means if PropertyChanged is null it wont invoke.
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-
 
         public string Text 
         { 

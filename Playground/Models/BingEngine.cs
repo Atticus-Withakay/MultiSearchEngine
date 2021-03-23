@@ -14,11 +14,30 @@ using System.Web;
 
 namespace Playground.ViewModels
 {
-    public class BingEngine : ISearchEngine
+    public class BingEngine : Notifier, ISearchEngine
     {
+        private string _NextPageUrl;
+        private string _PreviousPageUrl;
+
         public List<SearchResult> Results { get; set; }
-        public string NextPageUrl { get; set; }
-        public string PreviousPageUrl { get; set; }
+        public string NextPageUrl { 
+            get { return _NextPageUrl;  } 
+            set 
+            {
+                this._NextPageUrl = value;
+                OnNotifyPropertyChanged();
+            } 
+        }
+        public string PreviousPageUrl
+        {
+            get { return _PreviousPageUrl; }
+            set
+            {
+                this._PreviousPageUrl = value;
+                OnNotifyPropertyChanged();
+            }
+        }
+
         public string BaseUrl { get; set; } 
 
         public BingEngine()
@@ -35,7 +54,7 @@ namespace Playground.ViewModels
         public async Task DoSearchAsync(string searchTerm)
         {
             //All bing searches will have this as a base
-            var searchUrl = this.BaseUrl + "/search"; // https://www.bing.com/search";
+            var searchUrl = this.BaseUrl + "/search"; 
 
             // Make out request
             string content = await WebScraper.GetHTML(searchUrl, searchTerm);

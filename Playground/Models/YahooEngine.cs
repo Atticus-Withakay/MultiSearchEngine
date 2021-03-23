@@ -26,6 +26,11 @@ namespace Playground.ViewModels
         }
 
 
+        /// <summary>
+        /// Does a bing search
+        /// </summary>
+        /// <param name="searchTerm">The search term</param>
+        /// <returns></returns>
         public async Task DoSearchAsync(string searchTerm)
         {
             this.Results.Clear();
@@ -38,27 +43,39 @@ namespace Playground.ViewModels
             ParseResults(content);
         }
 
+        /// <summary>
+        ///  Gets the next Bing page
+        /// </summary>
+        /// <returns></returns>
         public async Task GetNextPageAsync()
         {
             string content = await WebScraper.GetHTML(this.NextPageUrl, string.Empty);
             ParseResults(content);
         }
 
+        /// <summary>
+        /// Gets the previouys Bing page
+        /// </summary>
+        /// <returns></returns>
         public async Task GetPreviousPageAsync()
         {
             string content = await WebScraper.GetHTML(this.PreviousPageUrl, string.Empty);
             ParseResults(content);
         }
 
+        /// <summary>
+        /// Parses a Bing search page
+        /// </summary>
+        /// <param name="content"></param>
         public void ParseResults(string content)
         {
             // Since we are parsing html lets make our results list blank.
             this.Results.Clear();
+
+            // Turn content which is a string into a html doc for easy parsing
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(content);
             var document = htmlDoc.DocumentNode;
-
-
             var results = document.QuerySelectorAll("div.algo");
 
             // Only process if results exist
@@ -72,24 +89,24 @@ namespace Playground.ViewModels
 
                     foreach (var result in results)
                     {
-                        //TODO: this is too ridgid, need more checks to see if things exist before attempting things
                         var anchor = result.QuerySelector("a");
 
                         // Yahoo href link is very long and hard to read
                         var url = anchor.Attributes["href"].Value;
                         // Get the friendly Display version that actually says where it is going
-                        var displayUrl = result.QuerySelector("span.fz-ms").InnerText;
+                        var displayUrl = result.QuerySelector("span.fz-ms")?.InnerText;
 
                         var text = result.QuerySelector("h3")?.InnerText;
                     
                         var description = result.QuerySelector("p.fz-ms")?.InnerText;
                         description = HttpUtility.HtmlDecode(description);
 
+                        // In case no description on a result
                         if (string.IsNullOrEmpty(description))
                         {
                             description = "Not applicable";
                         }
-                        //Console.WriteLine("Url: {0}\nText: {1}\nDesctiption: {2}\n", url, text, description);
+
                         Results.Add(new SearchResult(text, displayUrl, url, description, Source));
                     }
                 }
