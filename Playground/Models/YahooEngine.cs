@@ -17,7 +17,7 @@ namespace Playground.ViewModels
         public string PreviousPageUrl { get; set; }
         public string BaseUrl { get; set; }
 
-        private string Source = "Yahoo";
+        private const string Source = "Yahoo";
 
         public YahooEngine()
         {
@@ -66,7 +66,7 @@ namespace Playground.ViewModels
         /// <summary>
         /// Parses a Bing search page
         /// </summary>
-        /// <param name="content"></param>
+        /// <param name="content">The html</param>
         public void ParseResults(string content)
         {
             // Since we are parsing html lets make our results list blank.
@@ -96,9 +96,13 @@ namespace Playground.ViewModels
                         // Get the friendly Display version that actually says where it is going
                         var displayUrl = result.QuerySelector("span.fz-ms")?.InnerText;
 
+                        // Gets header text
                         var text = result.QuerySelector("h3")?.InnerText;
-                    
+                        
+                        // Gets the general description/summary of the link
                         var description = result.QuerySelector("p.fz-ms")?.InnerText;
+
+                        // Decodes html encoded special characters
                         description = HttpUtility.HtmlDecode(description);
 
                         // In case no description on a result
@@ -117,7 +121,5 @@ namespace Playground.ViewModels
                 }
             }
         }
-
-        
     }
 }

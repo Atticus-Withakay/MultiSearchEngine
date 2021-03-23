@@ -1,14 +1,9 @@
 ﻿using Fizzler.Systems.HtmlAgilityPack;
 using HtmlAgilityPack;
-using Microsoft.AspNetCore.WebUtilities;
 using Playground.Interfaces;
 using Playground.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -19,6 +14,9 @@ namespace Playground.ViewModels
         private string _NextPageUrl;
         private string _PreviousPageUrl;
 
+        private const string Source = "Bing";
+
+        #region Properties
         public List<SearchResult> Results { get; set; }
         public string NextPageUrl { 
             get { return _NextPageUrl;  } 
@@ -38,7 +36,8 @@ namespace Playground.ViewModels
             }
         }
 
-        public string BaseUrl { get; set; } 
+        public string BaseUrl { get; set; }
+        #endregion
 
         public BingEngine()
         {
@@ -62,34 +61,32 @@ namespace Playground.ViewModels
             ParseResults(content);
         }
 
+        /// <summary>
+        /// Gets the next page content
+        /// </summary>
+        /// <returns></returns>
         public async Task GetNextPageAsync()
         {
             string content = await WebScraper.GetHTML(this.NextPageUrl, string.Empty);
             ParseResults(content);
         }
+
+        /// <summary>
+        /// Gets the previous page content
+        /// </summary>
+        /// <returns></returns>
         public async Task GetPreviousPageAsync()
         {
             string content = await WebScraper.GetHTML(this.PreviousPageUrl, string.Empty);
             ParseResults(content);
         }
 
+        /// <summary>
+        /// Parses the html content
+        /// </summary>
+        /// <param name="content">The html</param>
         public void ParseResults(string content)
         {
-            /*
-             * 
-             * 
-             <ol id="b_results">
-                <li class="b_no">
-                    <h1>There are no results for <strong>wonderwoman</strong></h1>
-                    <ul>
-                        <li><span>Check your spelling or try different keywords</span></li>
-                    </ul>
-                    <br>
-                    <p>Ref A: 2843F521D842418F9A3BED20B3A2B8A5 Ref B: LTSEDGE1109 Ref C: 2021-03-21T12:45:27Z</p>
-                </li>
-             </ol>
-
-             */
             try
             {
                 // Clear old list
@@ -97,11 +94,8 @@ namespace Playground.ViewModels
 
                 var htmlDoc = new HtmlDocument();
                 htmlDoc.LoadHtml(content);
-
                 var document = htmlDoc.DocumentNode;
 
-
-                //var resultsSection = htmlDoc.DocumentNode.SelectSingleNode("//ol[@id='b_results']");
                 // Check for no results first!
                 var noResults = document.QuerySelector("li.b_no");// resultsSection.SelectNodes("//[@class='b_no']");
                 
@@ -110,10 +104,11 @@ namespace Playground.ViewModels
                 {
 
                     // Find the next page url
-
                     var next = HttpUtility.HtmlDecode(document.QuerySelector("a.sb_pagN")?.Attributes["href"].Value);
+                    // Find the previous page url
                     var prev = HttpUtility.HtmlDecode(document.QuerySelector("a.sb_pagP")?.Attributes["href"].Value);
                     
+                    // Handle null references
                     if (string.IsNullOrEmpty(next))
                     {
                         this.NextPageUrl = string.Empty;
@@ -134,22 +129,18 @@ namespace Playground.ViewModels
                     // Gets the list elements with the .b_algo class. As far as i 
                     var results = document.QuerySelectorAll("li.b_algo");
             
-                    //var results = resultsSection.SelectNodes("//li[@class='b_algo']");
-            
                     foreach (var result in results)
                     {
-                        //TODO: this is too ridgid, need more checks to see if things exist before attempting things
-                        var refNode = result.QuerySelector("a");// result.Element("h2").Element("a");
+                        var refNode = result.QuerySelector("a");
                         var url = refNode.Attributes["href"].Value;
-                        var displayUrl = result.QuerySelector("cite").InnerText;// result.QuerySelector("cite").InnerText;
+                        var displayUrl = result.QuerySelector("cite").InnerText;
                         var text = refNode.InnerText;
 
-                        //TODO: getting too much for the description. Need to be cases me thinks
-                        var descriptionHtml = result.InnerText;// result.QuerySelector("p").InnerText;// HttpUtility.HtmlDecode(result.InnerText);
+                        //TODO: getting too much for the description. Parsing can be improved 
+                        var descriptionHtml = result.InnerText;
                         var description = HttpUtility.HtmlDecode(descriptionHtml);
 
-
-                        Results.Add(new SearchResult(text, displayUrl, url, description, "Bing"));
+                        Results.Add(new SearchResult(text, displayUrl, url, description, Source));
                     }
                 }
             }

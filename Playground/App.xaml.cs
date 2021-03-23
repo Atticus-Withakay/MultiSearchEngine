@@ -15,6 +15,10 @@ namespace Playground
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// Tells the application to start with a particular window.
+        /// </summary>
+        /// <param name="e">Startup event args</param>
         protected override void OnStartup(StartupEventArgs e)
         {
             // Injects the view model into a the search engine view

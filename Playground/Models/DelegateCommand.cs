@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace Playground.Models
 {
     /// <summary>
-    /// 
+    /// Class to handle ICommand interface, bundles the work into a constructor.
     /// </summary>
     public class DelegateCommand : ICommand
     {
@@ -17,11 +13,15 @@ namespace Playground.Models
         Action<object> _action = null;
         Predicate<object> _predicate = null;
 
+        #endregion
+
+        #region Constructor
         public DelegateCommand(Action<object> action, Predicate<object> predicate)
         {
             _action = action;
             _predicate = predicate;
         }
+        #endregion
 
         public event EventHandler CanExecuteChanged
         {
@@ -39,6 +39,5 @@ namespace Playground.Models
             _action(parameter);
         }
         
-        #endregion
     }
 }
