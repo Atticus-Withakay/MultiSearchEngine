@@ -4,7 +4,7 @@ using Playground.Models;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
-namespace Playground.Views
+namespace Playground.Interfaces
 {
     /// <summary>
     /// Interface to define a search engine view model

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Playground.Interfaces;
+using System.Diagnostics;
 using System.Windows;
 
 namespace Playground.Views
