@@ -90,6 +90,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Helpers\SearchEngineHelper.cs" />
     <Compile Include="Interfaces\ISearchEngine.cs" />
     <Compile Include="Models\DelegateCommand.cs" />
     <Compile Include="Models\Notifier.cs" />

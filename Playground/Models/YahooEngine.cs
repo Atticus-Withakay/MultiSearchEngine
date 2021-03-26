@@ -8,7 +8,7 @@ using System.Web;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Playground.ViewModels
+namespace Playground.Models
 {
     internal class YahooEngine : ISearchEngine
     {

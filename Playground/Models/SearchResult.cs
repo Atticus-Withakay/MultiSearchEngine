@@ -64,7 +64,6 @@ namespace Playground.Models
             Url = url;
             Description = description;
             Source = source;
-            Console.WriteLine(this.ToString());
         }
 
         public override string ToString()

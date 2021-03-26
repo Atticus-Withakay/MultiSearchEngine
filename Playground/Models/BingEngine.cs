@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace Playground.ViewModels
+namespace Playground.Models
 {
     public class BingEngine : Notifier, ISearchEngine
     {

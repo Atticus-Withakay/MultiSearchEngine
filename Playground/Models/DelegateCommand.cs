@@ -11,7 +11,7 @@ namespace Playground.Models
         #region ICommand Members
         
         Action<object> _action = null;
-        Predicate<object> _predicate = null;
+        Predicate<object> _canExecute = null;
 
         #endregion
 
@@ -19,7 +19,7 @@ namespace Playground.Models
         public DelegateCommand(Action<object> action, Predicate<object> predicate)
         {
             _action = action;
-            _predicate = predicate;
+            _canExecute = predicate;
         }
         #endregion
 
@@ -31,7 +31,7 @@ namespace Playground.Models
 
         public bool CanExecute(object parameter)
         {
-            return _predicate(parameter);
+            return _canExecute(parameter);
         }
 
         public void Execute(object parameter)
