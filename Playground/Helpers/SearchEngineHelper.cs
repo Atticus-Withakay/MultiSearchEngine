@@ -63,7 +63,6 @@ namespace Playground.Helpers
                 new BingEngine(),
                 new YahooEngine()
             };
-            this.SearchResultCount = 1000;
             // Set the starting display image
             DisplayMessage = "Nothing to display, do a search";
         }

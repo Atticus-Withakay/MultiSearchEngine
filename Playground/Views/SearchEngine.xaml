@@ -53,7 +53,7 @@
                 CommandParameter="{Binding ElementName=TxtSearch, Path=Text}"/>
         <ListBox x:Name="ResultsList" Grid.Row="1" ItemsSource="{Binding Path=Results}" Margin="5,0,5,6" />
         <!--"Nothing to display, do a search"-->
-        <TextBlock Grid.Row="1" FontStyle="Italic" FontSize="32" Text="{Binding Path=DisplayMessage}" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock Grid.Row="1" FontStyle="Italic" FontSize="32" Text="{Binding Path=Helper.DisplayMessage}" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock.Style>
                 <Style TargetType="{x:Type TextBlock}">
                     <Setter Property="Visibility" Value="Collapsed" />
@@ -65,7 +65,7 @@
                 </Style>
             </TextBlock.Style>
         </TextBlock>
-        <TextBlock Grid.Row="2" Text="{Binding SearchResultCount, StringFormat='Search Count {0}'}"
+        <TextBlock Grid.Row="2" Text="{Binding Helper.SearchResultCount, StringFormat='Search Count {0}'}"
                    Margin="5,0"/>
 
         <Button Grid.Row="2" 
